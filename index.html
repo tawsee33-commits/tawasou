@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توسع - إدارة الأعمال الزراعية</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- html2pdf for perfect Arabic PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Cairo', 'sans-serif'] },
+                    colors: {
+                        emerald: { 850: '#064e3b', 950: '#022c22' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .nav-link { transition: all 0.3s; position: relative; }
+        .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; right: 0; background-color: #10b981; transition: width 0.3s; }
+        .nav-link:hover::after, .nav-link.active-link::after { width: 100%; }
+        .nav-link.active-link { color: #10b981; font-weight: 700; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+        
+        .dark .glass-card {
+            background: rgba(31, 41, 55, 0.7);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .dark .glass-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.4s ease-out forwards; }
+        
+        input, select, textarea { transition: all 0.3s ease; }
+        input:focus, select:focus, textarea:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .dark .gradient-text {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 via-gray-50 to-emerald-100 dark:from-gray-950 dark:via-gray-900 dark:to-emerald-950 text-gray-800 dark:text-gray-200 min-h-screen flex flex-col">
+
+    <!-- Global Datalists for Autocomplete -->
+    <datalist id="clientsList"></datalist>
+    <datalist id="inventoryList"></datalist>
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border-b border-white/20 dark:border-gray-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="showSection('home')">
+                <div class="w-10 h-10 bg-gradient-to-tr from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg transform group-hover:rotate-12 transition duration-300">ت</div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-emerald-900 dark:text-emerald-50">توسع</h1>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 -mt-1 hidden sm:block font-semibold">إدارة زراعية متطورة</p>
+                </div>
+            </div>
+            
+            <!-- Desktop Nav -->
+            <div class="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600 dark:text-gray-300">
+                <a href="javascript:void(0)" onclick="showSection('home')" id="nav-home" class="nav-link active-link">الرئيسية</a>
+                <a href="javascript:void(0)" onclick="showSection('clients')" id="nav-clients" class="nav-link">العملاء</a>
+                <a href="javascript:void(0)" onclick="showSection('inventory')" id="nav-inventory" class="nav-link">المخزون</a>
+                <a href="javascript:void(0)" onclick="showSection('invoicing')" id="nav-invoicing" class="nav-link">الفوترة</a>
+                <a href="javascript:void(0)" onclick="showSection('rental')" id="nav-rental" class="nav-link">الإيجار</a>
+                <a href="javascript:void(0)" onclick="showSection('scheduling')" id="nav-scheduling" class="nav-link">الجدولة</a>
+                <a href="javascript:void(0)" onclick="showSection('dashboard')" id="nav-dashboard" class="nav-link">الإحصائيات</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition" title="تبديل الوضع">
+                    <i class="fas fa-moon text-lg" id="theme-icon"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Nav Scrollable -->
+        <div class="lg:hidden flex overflow-x-auto py-2 px-4 gap-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-t border-gray-100 dark:border-gray-800 text-xs font-semibold whitespace-nowrap hide-scrollbar">
+            <a href="javascript:void(0)" onclick="showSection('home')" class="nav-link active-link"><i class="fas fa-home ml-1"></i>الرئيسية</a>
+            <a href="javascript:void(0)" onclick="showSection('clients')" class="nav-link"><i class="fas fa-users ml-1"></i>العملاء</a>
+            <a href="javascript:void(0)" onclick="showSection('inventory')" class="nav-link"><i class="fas fa-boxes ml-1"></i>المخزون</a>
+            <a href="javascript:void(0)" onclick="showSection('invoicing')" class="nav-link"><i class="fas fa-file-invoice ml-1"></i>الفواتير</a>
+            <a href="javascript:void(0)" onclick="showSection('rental')" class="nav-link"><i class="fas fa-tractor ml-1"></i>الإيجار</a>
+            <a href="javascript:void(0)" onclick="showSection('scheduling')" class="nav-link"><i class="fas fa-calendar ml-1"></i>الجدولة</a>
+            <a href="javascript:void(0)" onclick="showSection('dashboard')" class="nav-link"><i class="fas fa-chart-pie ml-1"></i>الإحصائيات</a>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-grow w-full relative z-10">
+
+        <!-- ================= HOME SECTION ================= -->
+        <div id="home" class="section active animate-slide-up">
+            <div class="text-center py-16 sm:py-24 relative">
+                <!-- Background decorative elements -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-2xl bg-emerald-300/20 dark:bg-emerald-900/20 blur-3xl rounded-full -z-10 pointer-events-none"></div>
+                
+                <h1 class="text-5xl sm:text-7xl font-extrabold mb-6 text-gray-900 dark:text-white tracking-tight">مرحباً بك في <span class="gradient-text">توسع</span></h1>
+                <p class="text-lg sm:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed mb-10">
+                    المنصة الذكية المتكاملة لإدارة أعمالك الزراعية في سلطنة عُمان. تحكم بعملائك، أدر معداتك، ونظم أمورك المالية بلمسة واحدة.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button onclick="showSection('invoicing')" class="bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-8 py-4 rounded-2xl text-lg font-bold flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/30 transition transform hover:-translate-y-1">
+                        <i class="fas fa-plus-circle"></i> إنشاء فاتورة احترافية
+                    </button>
+                    <button onclick="showSection('clients')" class="glass-card text-emerald-700 dark:text-emerald-400 hover:bg-white/90 dark:hover:bg-gray-800 px-8 py-4 rounded-2xl text-lg font-bold flex items-center justify-center gap-3 transition">
+                        <i class="fas fa-users"></i> إضافة عميل
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+                <div class="glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer" onclick="showSection('clients')">
+                    <div class="absolute top-0 right-0 w-1 h-full bg-blue-500"></div>
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl mb-4 group-hover:scale-110 transition"><i class="fas fa-users"></i></div>
+                    <h3 class="text-lg font-bold mb-1 dark:text-white">إدارة العملاء</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">سجل متكامل للعملاء</p>
+                </div>
+                <div class="glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer" onclick="showSection('inventory')">
+                    <div class="absolute top-0 right-0 w-1 h-full bg-purple-500"></div>
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-2xl flex items-center justify-center text-purple-600 dark:text-purple-400 text-xl mb-4 group-hover:scale-110 transition"><i class="fas fa-boxes"></i></div>
+                    <h3 class="text-lg font-bold mb-1 dark:text-white">المخزون والمعدات</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">تتبع حالة المعدات</p>
+                </div>
+                <div class="glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer" onclick="showSection('invoicing')">
+                    <div class="absolute top-0 right-0 w-1 h-full bg-emerald-500"></div>
+                    <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl mb-4 group-hover:scale-110 transition"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h3 class="text-lg font-bold mb-1 dark:text-white">نظام الفوترة</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">فواتير تفصيلية PDF</p>
+                </div>
+                <div class="glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer" onclick="showSection('rental')">
+                    <div class="absolute top-0 right-0 w-1 h-full bg-amber-500"></div>
+                    <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 text-xl mb-4 group-hover:scale-110 transition"><i class="fas fa-tractor"></i></div>
+                    <h3 class="text-lg font-bold mb-1 dark:text-white">عقود الإيجار</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">تأجير الجرارات والحصادات</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CLIENTS SECTION (CRM) ================= -->
+        <div id="clients" class="section animate-fade-in">
+            <h2 class="text-3xl font-extrabold mb-8 flex items-center gap-3 dark:text-white"><i class="fas fa-users text-blue-500"></i> إدارة العملاء</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">إضافة عميل جديد</h3>
+                        <form id="clientForm" onsubmit="event.preventDefault(); addClient();">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">اسم العميل <span class="text-red-500">*</span></label>
+                                    <input type="text" id="crmName" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">رقم الهاتف <span class="text-red-500">*</span></label>
+                                    <input type="tel" id="crmPhone" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">ملاحظات / عنوان</label>
+                                    <textarea id="crmNotes" rows="2" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"></textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                    <i class="fas fa-save"></i> حفظ العميل
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="glass-card p-6 rounded-2xl h-full">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">سجل العملاء</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right">
+                                <thead class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-800/50">
+                                    <tr>
+                                        <th class="p-3 rounded-tr-lg">الاسم</th>
+                                        <th class="p-3">الهاتف</th>
+                                        <th class="p-3">ملاحظات</th>
+                                        <th class="p-3 rounded-tl-lg text-center">إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientsListTable" class="divide-y divide-gray-100 dark:divide-gray-800 text-sm dark:text-gray-200">
+                                    <!-- JS populated -->
+                                </tbody>
+                            </table>
+                            <p id="noClients" class="text-center text-gray-500 py-8 hidden">لا يوجد عملاء مسجلين.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= INVENTORY SECTION ================= -->
+        <div id="inventory" class="section animate-fade-in">
+            <h2 class="text-3xl font-extrabold mb-8 flex items-center gap-3 dark:text-white"><i class="fas fa-boxes text-purple-500"></i> المخزون والمعدات</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">إضافة معدة / آلة</h3>
+                        <form id="inventoryForm" onsubmit="event.preventDefault(); addInventory();">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">اسم المعدة <span class="text-red-500">*</span></label>
+                                    <input type="text" id="invtName" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">النوع / التصنيف</label>
+                                    <select id="invtType" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none dark:text-white">
+                                        <option value="جرار">جرار</option>
+                                        <option value="حاصدة">حاصدة</option>
+                                        <option value="ملحقات">ملحقات (محراث، بذارة...)</option>
+                                        <option value="أخرى">أخرى</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">الحالة</label>
+                                    <select id="invtStatus" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none dark:text-white">
+                                        <option value="متاح">متاح</option>
+                                        <option value="مؤجر">مؤجر</option>
+                                        <option value="صيانة">في الصيانة</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                    <i class="fas fa-plus"></i> إضافة للمخزون
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="glass-card p-6 rounded-2xl h-full">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">قائمة المعدات</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="inventoryCards">
+                            <!-- JS populated -->
+                        </div>
+                        <p id="noInventory" class="text-center text-gray-500 py-8 hidden">لا توجد معدات مسجلة.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= INVOICING SECTION ================= -->
+        <div id="invoicing" class="section animate-fade-in">
+            <h2 class="text-3xl font-extrabold mb-8 flex items-center gap-3 dark:text-white"><i class="fas fa-file-invoice-dollar text-emerald-500"></i> نظام الفوترة الاحترافي</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">إنشاء فاتورة</h3>
+                        <form id="invoiceForm" onsubmit="event.preventDefault(); addInvoice();">
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">اسم العميل <span class="text-red-500">*</span></label>
+                                        <input type="text" list="clientsList" id="invClient" onchange="autofillPhone()" required placeholder="اختر أو اكتب اسم جديد" class="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 outline-none dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">رقم الهاتف <span class="text-red-500">*</span></label>
+                                        <input type="tel" id="invPhone" required class="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 outline-none dark:text-white">
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Invoice Items -->
+                                <div class="col-span-full mt-4">
+                                    <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">بنود الفاتورة <span class="text-red-500">*</span></label>
+                                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-x-auto mb-2 hide-scrollbar">
+                                        <table class="w-full text-right text-sm min-w-[550px]">
+                                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                                <tr>
+                                                    <th class="p-2 min-w-[150px]">المادة / الخدمة</th>
+                                                    <th class="p-2 w-20 text-center">العدد</th>
+                                                    <th class="p-2 w-28 text-center">التكلفة</th>
+                                                    <th class="p-2 w-32 text-center">المجموع</th>
+                                                    <th class="p-2 w-10"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="invoiceItemsBody">
+                                                <!-- Rows populated by JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <button type="button" onclick="addInvoiceItemRow()" class="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1 transition">
+                                        <i class="fas fa-plus-circle"></i> إضافة بند جديد
+                                    </button>
+                                    
+                                    <div class="mt-4 flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                                        <span class="font-bold text-gray-700 dark:text-gray-300">الإجمالي الكلي:</span>
+                                        <span class="font-mono font-bold text-xl text-emerald-600 dark:text-emerald-400"><span id="invoiceTotalDisplay">0.00</span> ر.ع.</span>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 mt-2 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                    <i class="fas fa-save"></i> حفظ وإصدار الفاتورة
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="glass-card p-6 rounded-2xl h-full">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">سجل الفواتير</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right">
+                                <thead class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-800/50">
+                                    <tr>
+                                        <th class="p-3 rounded-tr-lg">العميل</th>
+                                        <th class="p-3">التفاصيل</th>
+                                        <th class="p-3">التاريخ</th>
+                                        <th class="p-3">الإجمالي</th>
+                                        <th class="p-3 rounded-tl-lg text-center">إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoiceList" class="divide-y divide-gray-100 dark:divide-gray-800 text-sm dark:text-gray-200">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                            <p id="noInvoices" class="text-center text-gray-500 py-8 hidden">لا توجد فواتير مسجلة بعد.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= RENTAL SECTION ================= -->
+        <div id="rental" class="section animate-fade-in">
+            <h2 class="text-3xl font-extrabold mb-8 flex items-center gap-3 dark:text-white"><i class="fas fa-tractor text-amber-500"></i> عقود الإيجار</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">إنشاء عقد جديد</h3>
+                        <form id="rentalForm" onsubmit="event.preventDefault(); addRental();">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">اسم المستأجر <span class="text-red-500">*</span></label>
+                                    <input type="text" list="clientsList" id="rentClient" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-amber-500 outline-none dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">المعدة <span class="text-red-500">*</span></label>
+                                    <input type="text" list="inventoryList" id="rentType" required placeholder="اختر من المخزون أو اكتب" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-amber-500 outline-none dark:text-white">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">تاريخ البدء</label>
+                                        <input type="date" id="rentStart" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-amber-500 outline-none dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">تاريخ الانتهاء</label>
+                                        <input type="date" id="rentEnd" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-amber-500 outline-none dark:text-white">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">التكلفة لليوم (ر.ع.) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="rentPrice" required min="0" step="0.01" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-amber-500 outline-none dark:text-white">
+                                </div>
+                                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                    <i class="fas fa-file-contract"></i> إنشاء العقد
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="glass-card p-6 rounded-2xl h-full">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">العقود النشطة</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right">
+                                <thead class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-800/50">
+                                    <tr>
+                                        <th class="p-3 rounded-tr-lg">المستأجر</th>
+                                        <th class="p-3">المعدة</th>
+                                        <th class="p-3">المدة</th>
+                                        <th class="p-3">الإجمالي (ر.ع.)</th>
+                                        <th class="p-3 rounded-tl-lg text-center">إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rentalList" class="divide-y divide-gray-100 dark:divide-gray-800 text-sm dark:text-gray-200">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                            <p id="noRentals" class="text-center text-gray-500 py-8 hidden">لا توجد عقود إيجار نشطة.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SCHEDULING SECTION ================= -->
+        <div id="scheduling" class="section animate-fade-in">
+            <h2 class="text-3xl font-extrabold mb-8 flex items-center gap-3 dark:text-white"><i class="fas fa-calendar-alt text-rose-500"></i> الجدولة والمهام</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">إضافة موعد</h3>
+                        <form id="scheduleForm" onsubmit="event.preventDefault(); addSchedule();">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">العنوان <span class="text-red-500">*</span></label>
+                                    <input type="text" id="schTitle" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-rose-500 outline-none dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">النوع</label>
+                                    <select id="schType" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-rose-500 outline-none dark:text-white">
+                                        <option value="استشارة">استشارة</option>
+                                        <option value="فحص">فحص ميداني</option>
+                                        <option value="صيانة">صيانة معدات</option>
+                                        <option value="تسليم">تسليم</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">التاريخ</label>
+                                        <input type="date" id="schDate" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-rose-500 outline-none dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">الوقت</label>
+                                        <input type="time" id="schTime" required class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-rose-500 outline-none dark:text-white">
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                    <i class="fas fa-plus"></i> إضافة للجدول
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="glass-card p-6 rounded-2xl h-full">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">المواعيد القادمة</h3>
+                        <div id="scheduleList" class="space-y-3">
+                            <!-- Populated by JS -->
+                        </div>
+                        <p id="noSchedules" class="text-center text-gray-500 py-8 hidden">لا توجد زيارات مجدولة.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= DASHBOARD SECTION ================= -->
+        <div id="dashboard" class="section animate-fade-in">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-extrabold flex items-center gap-3 dark:text-white"><i class="fas fa-chart-pie text-indigo-500"></i> لوحة التحكم</h2>
+                
+                <!-- Backup / Restore -->
+                <div class="flex gap-2">
+                    <button onclick="exportData()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-sm">
+                        <i class="fas fa-download"></i> تصدير البيانات
+                    </button>
+                    <label class="bg-emerald-100 dark:bg-emerald-900/50 hover:bg-emerald-200 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-300 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-sm cursor-pointer">
+                        <i class="fas fa-upload"></i> استيراد
+                        <input type="file" accept=".json" onchange="importData(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+            
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="glass-card p-6 rounded-3xl border-r-4 border-emerald-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold">الإيرادات (ر.ع.)</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 font-mono" id="dashRevenue">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl"><i class="fas fa-coins"></i></div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-3xl border-r-4 border-blue-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold">إجمالي العملاء</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 font-mono" id="dashClientCount">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl"><i class="fas fa-users"></i></div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-3xl border-r-4 border-amber-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold">عقود الإيجار النشطة</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 font-mono" id="dashRentCount">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 text-xl"><i class="fas fa-tractor"></i></div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-3xl border-r-4 border-purple-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold">حجم المخزون (معدات)</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 font-mono" id="dashInvtCount">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-2xl flex items-center justify-center text-purple-600 dark:text-purple-400 text-xl"><i class="fas fa-boxes"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts & Tips -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 glass-card p-6 rounded-3xl">
+                    <h3 class="text-lg font-bold mb-4 dark:text-white">توزيع الإيرادات</h3>
+                    <div class="w-full h-64 relative">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-1 glass-card p-6 rounded-3xl flex flex-col">
+                    <h3 class="text-lg font-bold mb-4 dark:text-white">نصائح وإرشادات</h3>
+                    <ul class="space-y-4 text-sm text-gray-600 dark:text-gray-300 flex-grow">
+                        <li class="flex items-start gap-3"><i class="fas fa-shield-alt text-emerald-500 mt-1"></i> <div>بياناتك محفوظة بأمان في متصفحك (LocalStorage).</div></li>
+                        <li class="flex items-start gap-3"><i class="fas fa-file-pdf text-red-500 mt-1"></i> <div>يمكنك تصدير الفواتير كـ PDF احترافي يدعم اللغة العربية.</div></li>
+                        <li class="flex items-start gap-3"><i class="fas fa-cloud-download-alt text-blue-500 mt-1"></i> <div>لا تنسَ عمل <b>تصدير للبيانات</b> بشكل دوري لحفظ نسخة احتياطية.</div></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hidden Template for Professional PDF Generation -->
+    <div id="pdfTemplate" style="position: absolute; top: -9999px; left: -9999px; width: 210mm; max-width: none !important; overflow: visible; padding: 20mm; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #10b981; padding-bottom: 20px; margin-bottom: 30px;">
+            <div>
+                <h1 style="color: #064e3b; font-size: 36px; font-weight: 800; margin: 0;">توسع</h1>
+                <p style="color: #6b7280; margin: 5px 0; font-size: 15px; font-weight: 600;">لإدارة الأعمال الزراعية</p>
+                <p style="color: #4b5563; margin: 5px 0; font-size: 13px;"><i class="fas fa-map-marker-alt" style="color: #10b981;"></i> سلطنة عمان - ولاية منح</p>
+            </div>
+            <div style="text-align: left;">
+                <h2 style="color: #10b981; font-size: 28px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 1px;">فاتورة / INVOICE</h2>
+                <p style="margin: 5px 0; font-size: 14px;"><span style="color: #6b7280; font-weight: bold;">رقم الفاتورة:</span> #<span id="pdfId" style="font-family: monospace;"></span></p>
+                <p style="margin: 5px 0; font-size: 14px;"><span style="color: #6b7280; font-weight: bold;">التاريخ:</span> <span id="pdfDate" style="font-family: monospace;"></span></p>
+            </div>
+        </div>
+
+        <!-- Client Info -->
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #f3f4f6;">
+            <h3 style="margin-top: 0; margin-bottom: 10px; color: #374151; font-size: 16px;">فاتورة إلى:</h3>
+            <div style="display: flex; justify-content: space-between; font-size: 15px;">
+                <p style="margin: 0;"><span style="color: #6b7280;">العميل:</span> <strong id="pdfClient"></strong></p>
+                <p style="margin: 0;"><span style="color: #6b7280;">الجوال:</span> <strong id="pdfPhone" dir="ltr" style="font-family: monospace;"></strong></p>
+            </div>
+        </div>
+
+        <!-- Invoice Items Table -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; text-align: right; font-size: 14px;">
+            <thead>
+                <tr style="background-color: #064e3b; color: white;">
+                    <th style="padding: 12px; border: 1px solid #064e3b; width: 45%;">البيان / المادة</th>
+                    <th style="padding: 12px; border: 1px solid #064e3b; text-align: center; width: 15%;">العدد</th>
+                    <th style="padding: 12px; border: 1px solid #064e3b; text-align: center; width: 20%;">التكلفة (ر.ع.)</th>
+                    <th style="padding: 12px; border: 1px solid #064e3b; text-align: center; width: 20%;">المجموع (ر.ع.)</th>
+                </tr>
+            </thead>
+            <tbody id="pdfItemsBody">
+                <!-- Inserted by JS -->
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div style="display: flex; justify-content: flex-end;">
+            <table style="width: 350px; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 12px; font-weight: bold; color: #374151; border: 1px solid #e5e7eb; background-color: #f9fafb;">الإجمالي الكلي:</td>
+                    <td style="padding: 12px; font-weight: bold; color: #10b981; font-family: monospace; font-size: 20px; text-align: center; border: 1px solid #e5e7eb; background-color: #f0fdf4;"><span id="pdfTotal"></span> ر.ع.</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 60px; color: #9ca3af; font-size: 13px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+            <p>شكراً لتعاملكم معنا. نتمنى لكم موسماً زراعياً وفيراً.</p>
+            <p style="margin-top: 5px; font-size: 11px; color: #d1d5db;">تم إصدار هذه الفاتورة آلياً من نظام توسع.</p>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // --- State Management ---
+        let invoices = JSON.parse(localStorage.getItem('tawasou_invoices')) || [];
+        let rentals = JSON.parse(localStorage.getItem('tawasou_rentals')) || [];
+        let schedules = JSON.parse(localStorage.getItem('tawasou_schedules')) || [];
+        let clients = JSON.parse(localStorage.getItem('tawasou_clients')) || [];
+        let inventory = JSON.parse(localStorage.getItem('tawasou_inventory')) || [];
+        let myChart = null;
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            checkDarkMode();
+            refreshAllViews();
+            addInvoiceItemRow(); // Add first empty row to invoice
+        });
+
+        function refreshAllViews() {
+            renderClients();
+            renderInventory();
+            renderInvoices();
+            renderRentals();
+            renderSchedules();
+            updateDatalists();
+            updateDashboard();
+        }
+
+        // --- Navigation ---
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active-link'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll(`.nav-link[onclick="showSection('${sectionId}')"]`).forEach(link => {
+                link.classList.add('active-link');
+            });
+            
+            if (sectionId === 'dashboard') {
+                setTimeout(updateDashboard, 50);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Dark Mode ---
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('tawasou_darkmode', isDark);
+            document.getElementById('theme-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            if(myChart) updateDashboard();
+        }
+
+        function checkDarkMode() {
+            if (localStorage.getItem('tawasou_darkmode') === 'true' || 
+               (!('tawasou_darkmode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+            }
+        }
+
+        // --- Global Datalists ---
+        function updateDatalists() {
+            const clientsList = document.getElementById('clientsList');
+            clientsList.innerHTML = '';
+            clients.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                clientsList.appendChild(opt);
+            });
+
+            const inventoryList = document.getElementById('inventoryList');
+            inventoryList.innerHTML = '';
+            inventory.filter(i => i.status === 'متاح').forEach(inv => {
+                const opt = document.createElement('option');
+                opt.value = inv.name;
+                inventoryList.appendChild(opt);
+            });
+        }
+
+        function autofillPhone() {
+            const name = document.getElementById('invClient').value;
+            const client = clients.find(c => c.name === name);
+            if(client) {
+                document.getElementById('invPhone').value = client.phone;
+            }
+        }
+
+        // --- Clients (CRM) ---
+        function addClient() {
+            const client = {
+                id: Date.now(),
+                name: document.getElementById('crmName').value,
+                phone: document.getElementById('crmPhone').value,
+                notes: document.getElementById('crmNotes').value
+            };
+            clients.push(client);
+            localStorage.setItem('tawasou_clients', JSON.stringify(clients));
+            document.getElementById('clientForm').reset();
+            refreshAllViews();
+            alert('تم حفظ العميل بنجاح!');
+        }
+
+        function renderClients() {
+            const tbody = document.getElementById('clientsListTable');
+            const noData = document.getElementById('noClients');
+            tbody.innerHTML = '';
+            
+            if (clients.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+            noData.classList.add('hidden');
+
+            clients.slice().reverse().forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-100 dark:hover:bg-gray-800 transition group';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xs">${c.name.charAt(0)}</div>
+                        ${c.name}
+                    </td>
+                    <td class="p-3 font-mono text-gray-600 dark:text-gray-400" dir="ltr">${c.phone}</td>
+                    <td class="p-3 text-gray-500 dark:text-gray-400 truncate max-w-xs">${c.notes || '-'}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteClient(${c.id})" class="text-red-400 hover:text-red-600 p-1 transition"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteClient(id) {
+            if(confirm('هل أنت متأكد من حذف العميل؟')) {
+                clients = clients.filter(i => i.id !== id);
+                localStorage.setItem('tawasou_clients', JSON.stringify(clients));
+                refreshAllViews();
+            }
+        }
+
+        // --- Inventory ---
+        function addInventory() {
+            const item = {
+                id: Date.now(),
+                name: document.getElementById('invtName').value,
+                type: document.getElementById('invtType').value,
+                status: document.getElementById('invtStatus').value
+            };
+            inventory.push(item);
+            localStorage.setItem('tawasou_inventory', JSON.stringify(inventory));
+            document.getElementById('inventoryForm').reset();
+            refreshAllViews();
+        }
+
+        function renderInventory() {
+            const container = document.getElementById('inventoryCards');
+            const noData = document.getElementById('noInventory');
+            container.innerHTML = '';
+            
+            if (inventory.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+            noData.classList.add('hidden');
+
+            inventory.slice().reverse().forEach(item => {
+                let statusColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+                if(item.status === 'مؤجر') statusColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+                if(item.status === 'صيانة') statusColor = 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 border-red-200 dark:border-red-800';
+
+                const div = document.createElement('div');
+                div.className = `border ${statusColor} rounded-xl p-4 flex justify-between items-center bg-white dark:bg-gray-800 shadow-sm`;
+                div.innerHTML = `
+                    <div>
+                        <h4 class="font-bold text-gray-800 dark:text-white">${item.name}</h4>
+                        <p class="text-xs text-gray-500 mt-1">${item.type}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold px-2 py-1 rounded-md bg-opacity-50 ${statusColor}">${item.status}</span>
+                        <button onclick="deleteInventory(${item.id})" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteInventory(id) {
+            if(confirm('حذف المعدة من المخزون؟')) {
+                inventory = inventory.filter(i => i.id !== id);
+                localStorage.setItem('tawasou_inventory', JSON.stringify(inventory));
+                refreshAllViews();
+            }
+        }
+
+        // --- Invoicing Logic (Professional) ---
+        function addInvoiceItemRow() {
+            const tbody = document.getElementById('invoiceItemsBody');
+            const tr = document.createElement('tr');
+            tr.className = 'border-t border-gray-100 dark:border-gray-700 item-row transition';
+            tr.dataset.total = "0";
+            tr.innerHTML = `
+                <td class="p-2"><input type="text" required class="item-desc w-full p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white" placeholder="المادة / الخدمة"></td>
+                <td class="p-2"><input type="number" required min="1" value="1" oninput="calcInvoiceRow(this)" class="item-qty w-full p-2.5 text-center rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white font-mono min-w-[70px]"></td>
+                <td class="p-2"><input type="number" required min="0" step="0.01" value="0" oninput="calcInvoiceRow(this)" class="item-price w-full p-2.5 text-center rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white font-mono min-w-[90px]"></td>
+                <td class="p-2 text-center font-mono font-bold text-gray-700 dark:text-gray-300 item-total-text">0.00</td>
+                <td class="p-2 text-center"><button type="button" onclick="removeInvoiceItemRow(this)" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-times"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+            updateInvoiceTotal();
+        }
+
+        function removeInvoiceItemRow(btn) {
+            const tbody = document.getElementById('invoiceItemsBody');
+            if (tbody.children.length > 1) {
+                btn.closest('tr').remove();
+                updateInvoiceTotal();
+            } else {
+                alert('يجب أن تحتوي الفاتورة على بند واحد على الأقل.');
+            }
+        }
+
+        function calcInvoiceRow(input) {
+            const tr = input.closest('tr');
+            const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(tr.querySelector('.item-price').value) || 0;
+            const total = qty * price;
+            tr.querySelector('.item-total-text').textContent = total.toLocaleString('ar-OM', {minimumFractionDigits: 2});
+            tr.dataset.total = total;
+            updateInvoiceTotal();
+        }
+
+        function updateInvoiceTotal() {
+            let total = 0;
+            document.querySelectorAll('#invoiceItemsBody tr').forEach(tr => {
+                total += parseFloat(tr.dataset.total) || 0;
+            });
+            document.getElementById('invoiceTotalDisplay').textContent = total.toLocaleString('ar-OM', {minimumFractionDigits: 2});
+        }
+
+        function addInvoice() {
+            const clientName = document.getElementById('invClient').value;
+            const phone = document.getElementById('invPhone').value;
+            
+            const items = [];
+            let totalAmount = 0;
+            document.querySelectorAll('#invoiceItemsBody tr').forEach(tr => {
+                const desc = tr.querySelector('.item-desc').value.trim();
+                const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(tr.querySelector('.item-price').value) || 0;
+                const total = qty * price;
+                if(desc && qty > 0) {
+                    items.push({ desc, qty, price, total });
+                    totalAmount += total;
+                }
+            });
+
+            if(items.length === 0) {
+                alert('الرجاء إضافة بيانات البنود بشكل صحيح.');
+                return;
+            }
+
+            const inv = {
+                id: Date.now(),
+                client: clientName,
+                phone: phone,
+                items: items,
+                amount: totalAmount,
+                date: new Date().toLocaleDateString('ar-OM')
+            };
+            
+            if(!clients.find(c => c.name === inv.client)) {
+                clients.push({ id: Date.now(), name: inv.client, phone: inv.phone, notes: 'أُضيف تلقائياً من الفاتورة' });
+                localStorage.setItem('tawasou_clients', JSON.stringify(clients));
+            }
+
+            invoices.push(inv);
+            localStorage.setItem('tawasou_invoices', JSON.stringify(invoices));
+            
+            document.getElementById('invoiceForm').reset();
+            document.getElementById('invoiceItemsBody').innerHTML = '';
+            addInvoiceItemRow(); // reset table
+            
+            refreshAllViews();
+            alert('تم حفظ الفاتورة بنجاح!');
+        }
+
+        function renderInvoices() {
+            const tbody = document.getElementById('invoiceList');
+            const noData = document.getElementById('noInvoices');
+            tbody.innerHTML = '';
+            
+            if (invoices.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+            noData.classList.add('hidden');
+
+            invoices.slice().reverse().forEach(inv => {
+                // Backward compatibility for old invoices
+                let itemsCountText = inv.items ? `${inv.items.length} بنود` : inv.desc;
+                
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-800 transition';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold dark:text-white">${inv.client}</td>
+                    <td class="p-3 text-gray-600 dark:text-gray-300 text-sm">${itemsCountText}</td>
+                    <td class="p-3 text-gray-500 text-xs">${inv.date}</td>
+                    <td class="p-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">${inv.amount.toLocaleString('ar-OM', {minimumFractionDigits: 2})} ر.ع.</td>
+                    <td class="p-3 flex justify-center gap-2">
+                        <button onclick="generatePDF(${inv.id})" class="text-blue-500 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg transition" title="طباعة PDF"><i class="fas fa-file-pdf"></i></button>
+                        <button onclick="deleteInvoice(${inv.id})" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/30 p-2 rounded-lg transition" title="حذف"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteInvoice(id) {
+            if(confirm('هل أنت متأكد من حذف هذه الفاتورة؟')) {
+                invoices = invoices.filter(i => i.id !== id);
+                localStorage.setItem('tawasou_invoices', JSON.stringify(invoices));
+                refreshAllViews();
+            }
+        }
+
+        function generatePDF(id) {
+            const inv = invoices.find(i => i.id === id);
+            if (!inv) return;
+
+            document.getElementById('pdfClient').textContent = inv.client;
+            document.getElementById('pdfPhone').textContent = inv.phone;
+            document.getElementById('pdfId').textContent = inv.id.toString().slice(-6);
+            document.getElementById('pdfDate').textContent = inv.date;
+            
+            const tbody = document.getElementById('pdfItemsBody');
+            tbody.innerHTML = '';
+            
+            // Map old invoice structure to new for PDF backward compatibility
+            const items = inv.items || [{ desc: inv.desc, qty: 1, price: inv.amount, total: inv.amount }];
+            
+            items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; color: #374151;">${item.desc}</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center; font-family: monospace; color: #4b5563;">${item.qty}</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center; font-family: monospace; color: #4b5563;">${item.price.toLocaleString('ar-OM', {minimumFractionDigits: 2})}</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center; font-family: monospace; font-weight: bold; color: #1f2937;">${item.total.toLocaleString('ar-OM', {minimumFractionDigits: 2})}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('pdfTotal').textContent = inv.amount.toLocaleString('ar-OM', {minimumFractionDigits: 2});
+
+            const element = document.getElementById('pdfTemplate');
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `فاتورة_${inv.client}_${inv.id}.pdf`,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 2, useCORS: true, windowWidth: 794 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // --- Rental Logic ---
+        function addRental() {
+            const start = new Date(document.getElementById('rentStart').value);
+            const end = new Date(document.getElementById('rentEnd').value);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            const price = parseFloat(document.getElementById('rentPrice').value);
+            
+            const clientName = document.getElementById('rentClient').value;
+            const equipName = document.getElementById('rentType').value;
+
+            let invItem = inventory.find(i => i.name === equipName);
+            if(invItem) {
+                invItem.status = 'مؤجر';
+                localStorage.setItem('tawasou_inventory', JSON.stringify(inventory));
+            }
+
+            const rent = {
+                id: Date.now(),
+                client: clientName,
+                type: equipName,
+                start: document.getElementById('rentStart').value,
+                end: document.getElementById('rentEnd').value,
+                days: days > 0 ? days : 1,
+                total: (days > 0 ? days : 1) * price
+            };
+            rentals.push(rent);
+            localStorage.setItem('tawasou_rentals', JSON.stringify(rentals));
+            document.getElementById('rentalForm').reset();
+            refreshAllViews();
+            alert('تم إنشاء العقد بنجاح!');
+        }
+
+        function renderRentals() {
+            const tbody = document.getElementById('rentalList');
+            const noData = document.getElementById('noRentals');
+            tbody.innerHTML = '';
+            
+            if (rentals.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+            noData.classList.add('hidden');
+
+            rentals.slice().reverse().forEach(rent => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-800 transition';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold dark:text-white">${rent.client}</td>
+                    <td class="p-3 text-amber-600 dark:text-amber-400 font-bold">${rent.type}</td>
+                    <td class="p-3 text-xs text-gray-500">${rent.days} أيام<br>${rent.start} - ${rent.end}</td>
+                    <td class="p-3 font-mono font-bold dark:text-white">${rent.total.toLocaleString('ar-OM')} ر.ع.</td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteRental(${rent.id})" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/30 p-2 rounded-lg transition" title="إنهاء وحذف"><i class="fas fa-times"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteRental(id) {
+            if(confirm('إنهاء العقد سيحرر المعدة لتعود للحالة "متاح". هل أنت متأكد؟')) {
+                const rent = rentals.find(r => r.id === id);
+                if(rent) {
+                    let invItem = inventory.find(i => i.name === rent.type);
+                    if(invItem) {
+                        invItem.status = 'متاح';
+                        localStorage.setItem('tawasou_inventory', JSON.stringify(inventory));
+                    }
+                }
+                rentals = rentals.filter(r => r.id !== id);
+                localStorage.setItem('tawasou_rentals', JSON.stringify(rentals));
+                refreshAllViews();
+            }
+        }
+
+        // --- Scheduling Logic ---
+        function addSchedule() {
+            const sch = {
+                id: Date.now(),
+                title: document.getElementById('schTitle').value,
+                type: document.getElementById('schType').value,
+                date: document.getElementById('schDate').value,
+                time: document.getElementById('schTime').value
+            };
+            schedules.push(sch);
+            localStorage.setItem('tawasou_schedules', JSON.stringify(schedules));
+            document.getElementById('scheduleForm').reset();
+            refreshAllViews();
+        }
+
+        function renderSchedules() {
+            const container = document.getElementById('scheduleList');
+            const noData = document.getElementById('noSchedules');
+            container.innerHTML = '';
+            
+            if (schedules.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+            noData.classList.add('hidden');
+
+            const sorted = schedules.slice().sort((a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time));
+
+            sorted.forEach(sch => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm';
+                
+                let icon = 'fa-calendar';
+                let color = 'text-blue-500';
+                if (sch.type === 'استشارة') { icon = 'fa-user-tie'; color = 'text-indigo-500'; }
+                if (sch.type === 'فحص') { icon = 'fa-search'; color = 'text-emerald-500'; }
+                if (sch.type === 'صيانة') { icon = 'fa-tools'; color = 'text-amber-500'; }
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-700 flex items-center justify-center ${color}"><i class="fas ${icon}"></i></div>
+                        <div>
+                            <h4 class="font-bold text-sm dark:text-white">${sch.title}</h4>
+                            <p class="text-xs text-gray-500 mt-0.5"><i class="far fa-clock"></i> ${sch.date} | ${sch.time}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteSchedule(${sch.id})" class="text-gray-400 hover:text-red-500 px-2 transition"><i class="fas fa-check-circle"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteSchedule(id) {
+            schedules = schedules.filter(s => s.id !== id);
+            localStorage.setItem('tawasou_schedules', JSON.stringify(schedules));
+            refreshAllViews();
+        }
+
+        // --- Dashboard & Charts ---
+        function updateDashboard() {
+            document.getElementById('dashClientCount').textContent = clients.length;
+            document.getElementById('dashRentCount').textContent = rentals.length;
+            document.getElementById('dashInvtCount').textContent = inventory.length;
+            
+            const invTotal = invoices.reduce((s, i) => s + i.amount, 0);
+            const rentTotal = rentals.reduce((s, r) => s + r.total, 0);
+            const totalRevenue = invTotal + rentTotal;
+            document.getElementById('dashRevenue').textContent = totalRevenue.toLocaleString('ar-OM', { minimumFractionDigits: 0 });
+
+            // Chart
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#e5e7eb' : '#374151';
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['إيرادات الفواتير', 'إيرادات الإيجار'],
+                    datasets: [{
+                        label: 'المبلغ (ر.ع.)',
+                        data: [invTotal, rentTotal],
+                        backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.toLocaleString('ar-OM') + ' ر.ع.';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { ticks: { color: textColor }, grid: { color: isDark ? '#374151' : '#f3f4f6' } },
+                        x: { ticks: { color: textColor, font: {family: 'Cairo'} }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // --- Backup & Restore ---
+        function exportData() {
+            const data = { invoices, rentals, schedules, clients, inventory };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tawasou_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(data.invoices !== undefined) {
+                        localStorage.setItem('tawasou_invoices', JSON.stringify(data.invoices));
+                        localStorage.setItem('tawasou_rentals', JSON.stringify(data.rentals || []));
+                        localStorage.setItem('tawasou_schedules', JSON.stringify(data.schedules || []));
+                        localStorage.setItem('tawasou_clients', JSON.stringify(data.clients || []));
+                        localStorage.setItem('tawasou_inventory', JSON.stringify(data.inventory || []));
+                        alert('تم استيراد البيانات بنجاح! سيتم تحديث الصفحة.');
+                        location.reload();
+                    } else {
+                        alert('ملف النسخة الاحتياطية غير صالح.');
+                    }
+                } catch(err) {
+                    alert('حدث خطأ أثناء قراءة الملف.');
+                }
+            }
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
