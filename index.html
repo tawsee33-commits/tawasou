@@ -780,7 +780,7 @@
             </div>
             <!-- Modal Body (The Invoice) -->
             <div class="p-8 overflow-x-auto flex justify-center bg-gray-100/50">
-                <div id="pdfTemplate" style="width: 210mm; min-height: 297mm; padding: 20mm; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                <div id="pdfTemplate" style="width: 800px; min-height: 1130px; padding: 40px; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                     <!-- Top Gradient Accent Bar -->
                     <div style="height: 6px; background: linear-gradient(90deg, #059669 0%, #10b981 100%); margin: -20mm -20mm 20px -20mm;"></div>
                     
@@ -1263,7 +1263,7 @@
                     margin: [10, 10, 10, 10],
                     filename: `فاتورة_${inv.client}_${inv.id}.pdf`,
                     image: { type: 'jpeg', quality: 1 },
-                    html2canvas: { scale: 2, useCORS: true, windowWidth: 794, scrollY: 0, scrollX: 0 },
+                    html2canvas: { scale: 2, useCORS: true, windowWidth: 800, scrollY: 0, scrollX: 0 },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
                 html2pdf().set(opt).from(element).save();
