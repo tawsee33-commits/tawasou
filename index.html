@@ -63,6 +63,10 @@
         .nav-link:hover::after, .nav-link.active-link::after { width: 100%; }
         .nav-link.active-link { color: #10b981; font-weight: 700; }
         
+        /* Hide scrollbars for clean mobile layout */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -179,7 +183,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mt-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
                 <div class="glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer" onclick="showSection('clients')">
                     <div class="absolute top-0 right-0 w-1 h-full bg-blue-500"></div>
                     <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl mb-4 group-hover:scale-110 transition"><i class="fas fa-users"></i></div>
@@ -561,13 +565,18 @@
                                     <h3 id="selectedProjName" class="text-2xl font-bold text-gray-900 dark:text-white"></h3>
                                     <p id="selectedProjNotes" class="text-sm text-gray-500 dark:text-gray-400 mt-1"></p>
                                 </div>
-                                <button onclick="deleteProject()" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/30 px-3 py-1.5 rounded-lg text-sm font-bold transition flex items-center gap-1">
-                                    <i class="fas fa-trash"></i> حذف المشروع بالكامل
-                                </button>
+                                <div class="flex gap-2">
+                                    <button onclick="shareProjectWhatsApp()" class="text-emerald-600 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-lg text-sm font-bold transition flex items-center gap-1">
+                                        <i class="fab fa-whatsapp"></i> مشاركة بالواتساب
+                                    </button>
+                                    <button onclick="deleteProject()" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/30 px-3 py-1.5 rounded-lg text-sm font-bold transition flex items-center gap-1">
+                                        <i class="fas fa-trash"></i> حذف المشروع
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Budget Calculations Cards -->
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                                 <div class="p-4 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/50">
                                     <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold">مبلغ المشروع (الزبون)</p>
                                     <h4 id="projBudgetDisplay" class="text-xl font-bold text-teal-700 dark:text-teal-400 font-mono mt-1">0.00 ر.ع.</h4>
@@ -683,7 +692,7 @@
             </div>
             
             <!-- KPI Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
                 <div class="glass-card p-6 rounded-3xl border-r-4 border-emerald-500">
                     <div class="flex justify-between items-center">
                         <div>
@@ -753,7 +762,7 @@
     </div>
 
     <!-- Hidden Template for Professional PDF Generation -->
-    <div id="pdfTemplate" style="position: absolute; top: -9999px; left: -9999px; width: 210mm; max-width: none !important; overflow: visible; padding: 20mm; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box;">
+    <div id="pdfTemplate" style="position: fixed; top: 0; left: 0; width: 210mm; z-index: -9999; opacity: 0.001; pointer-events: none; max-width: none !important; overflow: visible; padding: 20mm; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box;">
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #10b981; padding-bottom: 20px; margin-bottom: 30px;">
             <div>
@@ -1131,6 +1140,7 @@
                     <td class="p-3 text-gray-500 text-xs">${inv.date}</td>
                     <td class="p-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">${inv.amount.toLocaleString('ar-OM', {minimumFractionDigits: 2})} ر.ع.</td>
                     <td class="p-3 flex justify-center gap-2">
+                        <button onclick="shareInvoiceWhatsApp(${inv.id})" class="text-emerald-500 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 p-2 rounded-lg transition" title="مشاركة بالواتساب"><i class="fab fa-whatsapp"></i></button>
                         <button onclick="generatePDF(${inv.id})" class="text-blue-500 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg transition" title="طباعة PDF"><i class="fas fa-file-pdf"></i></button>
                         <button onclick="deleteInvoice(${inv.id})" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/30 p-2 rounded-lg transition" title="حذف"><i class="fas fa-trash"></i></button>
                     </td>
@@ -1145,6 +1155,33 @@
                 localStorage.setItem('tawasou_invoices', JSON.stringify(invoices));
                 refreshAllViews();
             }
+        }
+
+        function shareInvoiceWhatsApp(id) {
+            const inv = invoices.find(i => i.id === id);
+            if (!inv) return;
+
+            let message = `*فاتورة من: توسع لإدارة الأعمال الزراعية*\n`;
+            message += `----------------------------------\n`;
+            message += `👤 *العميل:* ${inv.client}\n`;
+            message += `📞 *الهاتف:* ${inv.phone}\n`;
+            message += `📅 *التاريخ:* ${inv.date}\n`;
+            message += `🔢 *رقم الفاتورة:* #${inv.id.toString().slice(-6)}\n`;
+            message += `----------------------------------\n`;
+            message += `📋 *تفاصيل الفاتورة:*\n`;
+
+            const items = inv.items || [{ desc: inv.desc, qty: 1, price: inv.amount, total: inv.amount }];
+            items.forEach((item, index) => {
+                message += `${index + 1}. ${item.desc} - الكمية: ${item.qty} × سعر: ${item.price.toLocaleString('ar-OM')} ر.ع. = *${item.total.toLocaleString('ar-OM')} ر.ع.*\n`;
+            });
+
+            message += `----------------------------------\n`;
+            message += `💰 *الإجمالي الكلي:* *${inv.amount.toLocaleString('ar-OM', {minimumFractionDigits: 2})} ر.ع.*\n`;
+            message += `----------------------------------\n`;
+            message += `*نشكركم لتعاملكم معنا.*`;
+
+            const encodedText = encodeURIComponent(message);
+            window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
         }
 
         function generatePDF(id) {
@@ -1181,7 +1218,7 @@
                 margin: [10, 10, 10, 10],
                 filename: `فاتورة_${inv.client}_${inv.id}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 2, useCORS: true, windowWidth: 794 },
+                html2canvas: { scale: 2, useCORS: true, windowWidth: 794, scrollY: 0, scrollX: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
@@ -1530,6 +1567,42 @@
                 selectedProjectId = null;
                 refreshAllViews();
             }
+        }
+
+        function shareProjectWhatsApp() {
+            const proj = projects.find(p => p.id === selectedProjectId);
+            if (!proj) return;
+
+            const totalExpenses = proj.expenses ? proj.expenses.reduce((s, e) => s + e.total, 0) : 0;
+            const remaining = proj.budget - totalExpenses;
+            const percentage = proj.budget > 0 ? Math.round((totalExpenses / proj.budget) * 100) : 0;
+
+            let message = `*تقرير مشروع: ${proj.name}*\n`;
+            if (proj.notes) {
+                message += `_ملاحظات: ${proj.notes}_\n`;
+            }
+            message += `----------------------------------\n`;
+            message += `💰 *قيمة المشروع (الزبون):* ${proj.budget.toLocaleString('ar-OM')} ر.ع.\n`;
+            message += `💸 *إجمالي المصروفات:* ${totalExpenses.toLocaleString('ar-OM')} ر.ع.\n`;
+            message += `📈 *نسبة استهلاك الميزانية:* ${percentage}%\n`;
+            if (remaining >= 0) {
+                message += `💵 *صافي الأرباح المتبقية:* ${remaining.toLocaleString('ar-OM')} ر.ع.\n`;
+            } else {
+                message += `🚨 *العجز (تجاوز الميزانية):* ${Math.abs(remaining).toLocaleString('ar-OM')} ر.ع. -\n`;
+            }
+            
+            if (proj.expenses && proj.expenses.length > 0) {
+                message += `----------------------------------\n`;
+                message += `📋 *تفاصيل المصروفات:*\n`;
+                proj.expenses.forEach((exp, index) => {
+                    message += `${index + 1}. ${exp.desc} (${exp.category}) - الكمية: ${exp.qty} × سعر: ${exp.price.toLocaleString('ar-OM')} ر.ع. = *${exp.total.toLocaleString('ar-OM')} ر.ع.*\n`;
+                });
+            }
+            message += `----------------------------------\n`;
+            message += `*تم توليده بواسطة نظام توسع لإدارة الأعمال الزراعية*`;
+
+            const encodedText = encodeURIComponent(message);
+            window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
         }
 
         // --- Dashboard & Charts ---
