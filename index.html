@@ -133,6 +133,7 @@
                 <a href="javascript:void(0)" onclick="showSection('invoicing')" id="nav-invoicing" class="nav-link">الفوترة</a>
                 <a href="javascript:void(0)" onclick="showSection('rental')" id="nav-rental" class="nav-link">الإيجار</a>
                 <a href="javascript:void(0)" onclick="showSection('scheduling')" id="nav-scheduling" class="nav-link">الجدولة</a>
+                <a href="javascript:void(0)" onclick="showSection('projects')" id="nav-projects" class="nav-link">حاسبة المشاريع</a>
                 <a href="javascript:void(0)" onclick="showSection('dashboard')" id="nav-dashboard" class="nav-link">الإحصائيات</a>
             </div>
 
@@ -151,6 +152,7 @@
             <a href="javascript:void(0)" onclick="showSection('invoicing')" class="nav-link"><i class="fas fa-file-invoice ml-1"></i>الفواتير</a>
             <a href="javascript:void(0)" onclick="showSection('rental')" class="nav-link"><i class="fas fa-tractor ml-1"></i>الإيجار</a>
             <a href="javascript:void(0)" onclick="showSection('scheduling')" class="nav-link"><i class="fas fa-calendar ml-1"></i>الجدولة</a>
+            <a href="javascript:void(0)" onclick="showSection('projects')" class="nav-link"><i class="fas fa-calculator ml-1"></i>المشاريع</a>
             <a href="javascript:void(0)" onclick="showSection('dashboard')" class="nav-link"><i class="fas fa-chart-pie ml-1"></i>الإحصائيات</a>
         </div>
     </nav>
@@ -177,7 +179,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mt-4">
                 <div class="glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer" onclick="showSection('clients')">
                     <div class="absolute top-0 right-0 w-1 h-full bg-blue-500"></div>
                     <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl mb-4 group-hover:scale-110 transition"><i class="fas fa-users"></i></div>
@@ -201,6 +203,12 @@
                     <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 text-xl mb-4 group-hover:scale-110 transition"><i class="fas fa-tractor"></i></div>
                     <h3 class="text-lg font-bold mb-1 dark:text-white">عقود الإيجار</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400">تأجير الجرارات والحصادات</p>
+                </div>
+                <div class="glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer" onclick="showSection('projects')">
+                    <div class="absolute top-0 right-0 w-1 h-full bg-teal-500"></div>
+                    <div class="w-12 h-12 bg-teal-100 dark:bg-teal-900/50 rounded-2xl flex items-center justify-center text-teal-600 dark:text-teal-400 text-xl mb-4 group-hover:scale-110 transition"><i class="fas fa-calculator"></i></div>
+                    <h3 class="text-lg font-bold mb-1 dark:text-white">حاسبة المشاريع</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">مراقبة التكاليف والأرباح</p>
                 </div>
             </div>
         </div>
@@ -501,6 +509,162 @@
             </div>
         </div>
 
+        <!-- ================= PROJECTS CALCULATOR SECTION ================= -->
+        <div id="projects" class="section animate-fade-in">
+            <h2 class="text-3xl font-extrabold mb-8 flex items-center gap-3 dark:text-white">
+                <i class="fas fa-calculator text-teal-500"></i> حاسبة المشاريع
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Add Project / Projects List -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- New Project Card -->
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">إضافة مشروع جديد</h3>
+                        <form id="projectForm" onsubmit="event.preventDefault(); addProject();">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">اسم المشروع <span class="text-red-500">*</span></label>
+                                    <input type="text" id="projName" required placeholder="مثال: تركيب شبكة ري مزرعة الخوض" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 outline-none dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">قيمة المشروع (مبلغ الزبون) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="projBudget" required min="0" step="0.01" placeholder="مثال: 1500" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 outline-none dark:text-white font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">ملاحظات المشروع</label>
+                                    <textarea id="projNotes" rows="2" placeholder="ملاحظات إضافية..." class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 outline-none dark:text-white"></textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                    <i class="fas fa-plus"></i> إنشاء المشروع
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Projects List -->
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">المشاريع الحالية</h3>
+                        <div class="space-y-3 max-h-[400px] overflow-y-auto pr-1" id="projectsListContainer">
+                            <!-- JS Populated -->
+                        </div>
+                        <p id="noProjects" class="text-center text-gray-500 py-8 hidden">لا توجد مشاريع مسجلة بعد.</p>
+                    </div>
+                </div>
+
+                <!-- Selected Project Details / Expenses -->
+                <div class="lg:col-span-2">
+                    <div id="projectDetailsContainer" class="hidden space-y-6">
+                        <!-- Project Header / KPI Cards -->
+                        <div class="glass-card p-6 rounded-2xl">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                                <div>
+                                    <h3 id="selectedProjName" class="text-2xl font-bold text-gray-900 dark:text-white"></h3>
+                                    <p id="selectedProjNotes" class="text-sm text-gray-500 dark:text-gray-400 mt-1"></p>
+                                </div>
+                                <button onclick="deleteProject()" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/30 px-3 py-1.5 rounded-lg text-sm font-bold transition flex items-center gap-1">
+                                    <i class="fas fa-trash"></i> حذف المشروع بالكامل
+                                </button>
+                            </div>
+
+                            <!-- Budget Calculations Cards -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                                <div class="p-4 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/50">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold">مبلغ المشروع (الزبون)</p>
+                                    <h4 id="projBudgetDisplay" class="text-xl font-bold text-teal-700 dark:text-teal-400 font-mono mt-1">0.00 ر.ع.</h4>
+                                </div>
+                                <div class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold">إجمالي التكاليف (المصروفات)</p>
+                                    <h4 id="projExpensesDisplay" class="text-xl font-bold text-rose-700 dark:text-rose-400 font-mono mt-1 font-semibold">0.00 ر.ع.</h4>
+                                </div>
+                                <div id="projProfitCard" class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold">المتبقي (الأرباح)</p>
+                                    <h4 id="projProfitDisplay" class="text-xl font-bold text-emerald-700 dark:text-emerald-400 font-mono mt-1 font-semibold">0.00 ر.ع.</h4>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs font-bold text-gray-600 dark:text-gray-400">
+                                    <span>نسبة استهلاك الميزانية:</span>
+                                    <span id="projExpensePercentage" class="font-mono">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                                    <div id="projProgressBar" class="bg-teal-500 h-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add Expense Form & Expenses Log -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                            <!-- Add Expense Form -->
+                            <div class="md:col-span-5 glass-card p-6 rounded-2xl h-fit">
+                                <h4 class="text-lg font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">إضافة فاتورة / مصروف</h4>
+                                <form id="expenseForm" onsubmit="event.preventDefault(); addExpense();">
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">البيان (اسم الغرض / الخدمة) <span class="text-red-500">*</span></label>
+                                            <input type="text" id="expDesc" required placeholder="مثال: شراء أنابيب تنقيط" class="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 outline-none dark:text-white">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">الكمية <span class="text-red-500">*</span></label>
+                                                <input type="number" id="expQty" required min="1" value="1" class="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 outline-none dark:text-white font-mono">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">سعر الوحدة <span class="text-red-500">*</span></label>
+                                                <input type="number" id="expPrice" required min="0" step="0.001" placeholder="0.000" class="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 outline-none dark:text-white font-mono">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">تصنيف المصروف</label>
+                                            <select id="expCategory" class="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 outline-none dark:text-white">
+                                                <option value="أدوات ومواد">أدوات ومواد</option>
+                                                <option value="أيدي عاملة">أيدي عاملة</option>
+                                                <option value="نقل وتوصيل">نقل وتوصيل</option>
+                                                <option value="فواتير وخدمات">فواتير وخدمات</option>
+                                                <option value="أخرى">أخرى</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                            <i class="fas fa-plus"></i> إضافة للمصروفات
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Expenses Log Table -->
+                            <div class="md:col-span-7 glass-card p-6 rounded-2xl flex flex-col h-full min-h-[350px]">
+                                <h4 class="text-lg font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-white">سجل المصروفات</h4>
+                                <div class="overflow-x-auto flex-grow">
+                                    <table class="w-full text-right text-sm">
+                                        <thead class="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
+                                            <tr>
+                                                <th class="p-2.5 rounded-tr-lg">البيان</th>
+                                                <th class="p-2.5 text-center">الكمية × السعر</th>
+                                                <th class="p-2.5 text-center">الإجمالي</th>
+                                                <th class="p-2.5 rounded-tl-lg text-center">حذف</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="expensesListTable" class="divide-y divide-gray-100 dark:divide-gray-800">
+                                            <!-- JS Populated -->
+                                        </tbody>
+                                    </table>
+                                    <p id="noExpenses" class="text-center text-gray-500 py-12 hidden">لا توجد مصروفات مسجلة لهذا المشروع.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Placeholder when no project is selected -->
+                    <div id="projectPlaceholder" class="glass-card p-12 rounded-2xl flex flex-col items-center justify-center text-center h-full min-h-[400px]">
+                        <div class="w-20 h-20 bg-teal-50 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center text-3xl mb-6 shadow-inner"><i class="fas fa-calculator"></i></div>
+                        <h3 class="text-xl font-bold mb-2 dark:text-white">لم يتم اختيار مشروع</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm">اختر مشروعاً من القائمة الجانبية أو قم بإنشاء مشروع جديد لبدء تتبع التكاليف والفواتير.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ================= DASHBOARD SECTION ================= -->
         <div id="dashboard" class="section animate-fade-in">
             <div class="flex justify-between items-center mb-8">
@@ -519,7 +683,7 @@
             </div>
             
             <!-- KPI Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                 <div class="glass-card p-6 rounded-3xl border-r-4 border-emerald-500">
                     <div class="flex justify-between items-center">
                         <div>
@@ -527,6 +691,15 @@
                             <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 font-mono" id="dashRevenue">0</h3>
                         </div>
                         <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl"><i class="fas fa-coins"></i></div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-3xl border-r-4 border-teal-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold">أرباح المشاريع (ر.ع.)</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 font-mono" id="dashProjectsProfit">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-teal-100 dark:bg-teal-900/50 rounded-2xl flex items-center justify-center text-teal-600 dark:text-teal-400 text-xl"><i class="fas fa-calculator"></i></div>
                     </div>
                 </div>
                 <div class="glass-card p-6 rounded-3xl border-r-4 border-blue-500">
@@ -644,6 +817,8 @@
         let schedules = JSON.parse(localStorage.getItem('tawasou_schedules')) || [];
         let clients = JSON.parse(localStorage.getItem('tawasou_clients')) || [];
         let inventory = JSON.parse(localStorage.getItem('tawasou_inventory')) || [];
+        let projects = JSON.parse(localStorage.getItem('tawasou_projects')) || [];
+        let selectedProjectId = null;
         let myChart = null;
 
         // --- Initialization ---
@@ -659,6 +834,17 @@
             renderInvoices();
             renderRentals();
             renderSchedules();
+            renderProjects();
+            
+            // Validate selectedProjectId
+            if (selectedProjectId && projects.some(p => p.id === selectedProjectId)) {
+                renderProjectExpenses();
+            } else {
+                selectedProjectId = null;
+                document.getElementById('projectDetailsContainer').classList.add('hidden');
+                document.getElementById('projectPlaceholder').classList.remove('hidden');
+            }
+
             updateDatalists();
             updateDashboard();
         }
@@ -1135,6 +1321,217 @@
             refreshAllViews();
         }
 
+        // --- Projects Calculator Logic ---
+        function addProject() {
+            const name = document.getElementById('projName').value.trim();
+            const budget = parseFloat(document.getElementById('projBudget').value) || 0;
+            const notes = document.getElementById('projNotes').value.trim();
+
+            if (!name) {
+                alert('يرجى إدخال اسم المشروع.');
+                return;
+            }
+
+            const project = {
+                id: Date.now(),
+                name: name,
+                budget: budget,
+                notes: notes,
+                expenses: [],
+                date: new Date().toLocaleDateString('ar-OM')
+            };
+
+            projects.push(project);
+            localStorage.setItem('tawasou_projects', JSON.stringify(projects));
+            document.getElementById('projectForm').reset();
+            
+            refreshAllViews();
+            selectProject(project.id);
+            alert('تم إنشاء المشروع بنجاح!');
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projectsListContainer');
+            const noData = document.getElementById('noProjects');
+            container.innerHTML = '';
+
+            if (projects.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+            noData.classList.add('hidden');
+
+            projects.slice().reverse().forEach(proj => {
+                const totalExpenses = proj.expenses ? proj.expenses.reduce((s, e) => s + e.total, 0) : 0;
+                const percentage = proj.budget > 0 ? Math.min(Math.round((totalExpenses / proj.budget) * 100), 100) : 0;
+                let progressColor = 'bg-teal-500';
+                if (percentage > 70) progressColor = 'bg-amber-500';
+                if (percentage > 90) progressColor = 'bg-rose-500';
+
+                const div = document.createElement('div');
+                const isSelected = proj.id === selectedProjectId;
+                div.className = `p-4 rounded-xl border cursor-pointer transition ${isSelected ? 'border-teal-500 bg-teal-50/50 dark:bg-teal-950/20 font-bold' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}`;
+                div.onclick = () => selectProject(proj.id);
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-sm ${isSelected ? 'text-teal-650 dark:text-teal-400' : 'text-gray-800 dark:text-white'}">${proj.name}</h4>
+                        <span class="text-xs text-gray-400 font-mono">${proj.date}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-2 font-semibold">
+                        <span>الميزانية: <span class="font-mono">${proj.budget.toLocaleString('ar-OM')}</span> ر.ع.</span>
+                        <span>المصروف: <span class="font-mono">${totalExpenses.toLocaleString('ar-OM')}</span> ر.ع.</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                        <div class="${progressColor} h-full" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function selectProject(id) {
+            selectedProjectId = id;
+            renderProjects();
+
+            const proj = projects.find(p => p.id === id);
+            if (!proj) {
+                document.getElementById('projectDetailsContainer').classList.add('hidden');
+                document.getElementById('projectPlaceholder').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('projectPlaceholder').classList.add('hidden');
+            document.getElementById('projectDetailsContainer').classList.remove('hidden');
+
+            document.getElementById('selectedProjName').textContent = proj.name;
+            document.getElementById('selectedProjNotes').textContent = proj.notes || 'لا توجد ملاحظات';
+
+            renderProjectExpenses();
+        }
+
+        function renderProjectExpenses() {
+            const proj = projects.find(p => p.id === selectedProjectId);
+            if (!proj) return;
+
+            const tbody = document.getElementById('expensesListTable');
+            const noData = document.getElementById('noExpenses');
+            tbody.innerHTML = '';
+
+            if (!proj.expenses) proj.expenses = [];
+
+            const totalExpenses = proj.expenses.reduce((s, e) => s + e.total, 0);
+            const remaining = proj.budget - totalExpenses;
+            const percentage = proj.budget > 0 ? Math.round((totalExpenses / proj.budget) * 100) : 0;
+
+            document.getElementById('projBudgetDisplay').textContent = proj.budget.toLocaleString('ar-OM', {minimumFractionDigits: 2}) + ' ر.ع.';
+            document.getElementById('projExpensesDisplay').textContent = totalExpenses.toLocaleString('ar-OM', {minimumFractionDigits: 2}) + ' ر.ع.';
+            
+            const profitDisplay = document.getElementById('projProfitDisplay');
+            profitDisplay.textContent = remaining.toLocaleString('ar-OM', {minimumFractionDigits: 2}) + ' ر.ع.';
+            
+            const profitCard = document.getElementById('projProfitCard');
+            if (remaining >= 0) {
+                profitCard.className = 'p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50';
+                profitDisplay.className = 'text-xl font-bold text-emerald-700 dark:text-emerald-400 font-mono mt-1 font-semibold';
+            } else {
+                profitCard.className = 'p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50';
+                profitDisplay.className = 'text-xl font-bold text-red-700 dark:text-red-400 font-mono mt-1 font-semibold';
+            }
+
+            document.getElementById('projExpensePercentage').textContent = percentage + '%';
+            
+            const progressBar = document.getElementById('projProgressBar');
+            progressBar.style.width = Math.min(percentage, 100) + '%';
+            if (percentage > 90) {
+                progressBar.className = 'bg-red-500 h-full transition-all duration-500';
+            } else if (percentage > 70) {
+                progressBar.className = 'bg-amber-500 h-full transition-all duration-500';
+            } else {
+                progressBar.className = 'bg-teal-500 h-full transition-all duration-500';
+            }
+
+            if (proj.expenses.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+            noData.classList.add('hidden');
+
+            proj.expenses.forEach(exp => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-800 transition text-sm';
+                tr.innerHTML = `
+                    <td class="p-2.5 font-semibold dark:text-white">
+                        ${exp.desc}
+                        <span class="block text-[10px] text-gray-500 font-normal mt-0.5">${exp.category}</span>
+                    </td>
+                    <td class="p-2.5 text-center text-gray-650 dark:text-gray-400 font-mono">${exp.qty} × ${exp.price.toLocaleString('ar-OM', {minimumFractionDigits: 3})}</td>
+                    <td class="p-2.5 text-center font-mono font-bold dark:text-white">${exp.total.toLocaleString('ar-OM', {minimumFractionDigits: 2})} ر.ع.</td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="deleteExpense(${exp.id})" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function addExpense() {
+            const proj = projects.find(p => p.id === selectedProjectId);
+            if (!proj) return;
+
+            const desc = document.getElementById('expDesc').value.trim();
+            const qty = parseFloat(document.getElementById('expQty').value) || 0;
+            const price = parseFloat(document.getElementById('expPrice').value) || 0;
+            const category = document.getElementById('expCategory').value;
+
+            if (!desc || qty <= 0 || price < 0) {
+                alert('الرجاء إدخال تفاصيل المصروف بشكل صحيح.');
+                return;
+            }
+
+            if (!proj.expenses) proj.expenses = [];
+
+            const expense = {
+                id: Date.now(),
+                desc: desc,
+                qty: qty,
+                price: price,
+                category: category,
+                total: qty * price
+            };
+
+            proj.expenses.push(expense);
+            localStorage.setItem('tawasou_projects', JSON.stringify(projects));
+            
+            document.getElementById('expenseForm').reset();
+            document.getElementById('expQty').value = "1";
+            
+            renderProjectExpenses();
+            renderProjects();
+            updateDashboard();
+        }
+
+        function deleteExpense(expId) {
+            const proj = projects.find(p => p.id === selectedProjectId);
+            if (!proj) return;
+
+            if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) {
+                proj.expenses = proj.expenses.filter(e => e.id !== expId);
+                localStorage.setItem('tawasou_projects', JSON.stringify(projects));
+                renderProjectExpenses();
+                renderProjects();
+                updateDashboard();
+            }
+        }
+
+        function deleteProject() {
+            if (confirm('هل أنت متأكد من حذف هذا المشروع بالكامل بجميع مصروفاته؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                projects = projects.filter(p => p.id !== selectedProjectId);
+                localStorage.setItem('tawasou_projects', JSON.stringify(projects));
+                selectedProjectId = null;
+                refreshAllViews();
+            }
+        }
+
         // --- Dashboard & Charts ---
         function updateDashboard() {
             document.getElementById('dashClientCount').textContent = clients.length;
@@ -1146,6 +1543,20 @@
             const totalRevenue = invTotal + rentTotal;
             document.getElementById('dashRevenue').textContent = totalRevenue.toLocaleString('ar-OM', { minimumFractionDigits: 0 });
 
+            // Calculate Project Profits
+            let totalProjectBudget = 0;
+            let totalProjectExpenses = 0;
+            projects.forEach(p => {
+                totalProjectBudget += p.budget || 0;
+                if (p.expenses) {
+                    p.expenses.forEach(e => {
+                        totalProjectExpenses += e.total || 0;
+                    });
+                }
+            });
+            const projectProfit = totalProjectBudget - totalProjectExpenses;
+            document.getElementById('dashProjectsProfit').textContent = projectProfit.toLocaleString('ar-OM', { minimumFractionDigits: 0 });
+
             // Chart
             const ctx = document.getElementById('revenueChart').getContext('2d');
             if(myChart) myChart.destroy();
@@ -1156,11 +1567,11 @@
             myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['إيرادات الفواتير', 'إيرادات الإيجار'],
+                    labels: ['إيرادات الفواتير', 'إيرادات الإيجار', 'أرباح المشاريع'],
                     datasets: [{
                         label: 'المبلغ (ر.ع.)',
-                        data: [invTotal, rentTotal],
-                        backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+                        data: [invTotal, rentTotal, projectProfit],
+                        backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(20, 184, 166, 0.8)'],
                         borderRadius: 8
                     }]
                 },
@@ -1187,7 +1598,7 @@
 
         // --- Backup & Restore ---
         function exportData() {
-            const data = { invoices, rentals, schedules, clients, inventory };
+            const data = { invoices, rentals, schedules, clients, inventory, projects };
             const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1209,6 +1620,7 @@
                         localStorage.setItem('tawasou_schedules', JSON.stringify(data.schedules || []));
                         localStorage.setItem('tawasou_clients', JSON.stringify(data.clients || []));
                         localStorage.setItem('tawasou_inventory', JSON.stringify(data.inventory || []));
+                        localStorage.setItem('tawasou_projects', JSON.stringify(data.projects || []));
                         alert('تم استيراد البيانات بنجاح! سيتم تحديث الصفحة.');
                         location.reload();
                     } else {
