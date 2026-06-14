@@ -761,79 +761,100 @@
 
     </div>
 
-    <!-- Hidden Template for Professional PDF Generation -->
-    <div id="pdfTemplate" style="position: fixed; left: -9999px; top: 0; width: 210mm; min-height: 297mm; z-index: -9999; opacity: 1; pointer-events: none; max-width: none !important; overflow: visible; padding: 25mm 20mm; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box;">
-        <!-- Top Gradient Accent Bar -->
-        <div style="height: 6px; background: linear-gradient(90deg, #059669 0%, #10b981 100%); margin: -25mm -20mm 20px -20mm;"></div>
-        
-        <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 25px; margin-bottom: 30px;">
-            <div>
-                <h1 style="color: #064e3b; font-size: 34px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">توسع</h1>
-                <p style="color: #059669; margin: 4px 0 0 0; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">لإدارة الأعمال والخدمات الزراعية</p>
-                <div style="margin-top: 8px; font-size: 12px; color: #6b7280; line-height: 1.5;">
-                    <p style="margin: 0;"><i class="fas fa-map-marker-alt" style="color: #10b981; margin-left: 5px;"></i> سلطنة عمان - ولاية منح</p>
+    <!-- Hidden Template / Modal for Professional PDF Generation -->
+    <div id="pdfModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-150 flex justify-between items-center bg-gray-50 rounded-t-3xl">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 dark:text-gray-800">
+                    <i class="fas fa-file-invoice-dollar text-emerald-500"></i> معاينة الفاتورة
+                </h3>
+                <div class="flex gap-2">
+                    <button id="pdfDownloadBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition">
+                        <i class="fas fa-download"></i> تحميل PDF
+                    </button>
+                    <button onclick="closePdfModal()" class="text-gray-400 hover:text-gray-655 p-2 text-xl transition">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
-            <div style="text-align: left;">
-                <h2 style="color: #10b981; font-size: 26px; font-weight: 800; margin: 0; letter-spacing: 1px;">فاتورة / INVOICE</h2>
-                <div style="margin-top: 10px; font-size: 13px; color: #4b5563; line-height: 1.6; text-align: left;">
-                    <p style="margin: 0;"><span style="color: #9ca3af; font-weight: 600;">رقم الفاتورة:</span> <strong style="color: #1f2937; font-family: monospace;">#<span id="pdfId"></span></strong></p>
-                    <p style="margin: 0;"><span style="color: #9ca3af; font-weight: 600;">التاريخ:</span> <strong style="color: #1f2937; font-family: monospace;"><span id="pdfDate"></span></strong></p>
+            <!-- Modal Body (The Invoice) -->
+            <div class="p-8 overflow-x-auto flex justify-center bg-gray-100/50">
+                <div id="pdfTemplate" style="width: 210mm; min-height: 297mm; padding: 20mm; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <!-- Top Gradient Accent Bar -->
+                    <div style="height: 6px; background: linear-gradient(90deg, #059669 0%, #10b981 100%); margin: -20mm -20mm 20px -20mm;"></div>
+                    
+                    <!-- Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 25px; margin-bottom: 30px;">
+                        <div>
+                            <h1 style="color: #064e3b; font-size: 34px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">توسع</h1>
+                            <p style="color: #059669; margin: 4px 0 0 0; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">لإدارة الأعمال والخدمات الزراعية</p>
+                            <div style="margin-top: 8px; font-size: 12px; color: #6b7280; line-height: 1.5;">
+                                <p style="margin: 0;"><i class="fas fa-map-marker-alt" style="color: #10b981; margin-left: 5px;"></i> سلطنة عمان - ولاية منح</p>
+                            </div>
+                        </div>
+                        <div style="text-align: left;">
+                            <h2 style="color: #10b981; font-size: 26px; font-weight: 800; margin: 0; letter-spacing: 1px;">فاتورة / INVOICE</h2>
+                            <div style="margin-top: 10px; font-size: 13px; color: #4b5563; line-height: 1.6; text-align: left;">
+                                <p style="margin: 0;"><span style="color: #9ca3af; font-weight: 600;">رقم الفاتورة:</span> <strong style="color: #1f2937; font-family: monospace;">#<span id="pdfId"></span></strong></p>
+                                <p style="margin: 0;"><span style="color: #9ca3af; font-weight: 600;">التاريخ:</span> <strong style="color: #1f2937; font-family: monospace;"><span id="pdfDate"></span></strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Client Info & Details -->
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 35px;">
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #f1f5f9;">
+                            <h3 style="margin-top: 0; margin-bottom: 12px; color: #064e3b; font-size: 15px; font-weight: 700; border-right: 3px solid #10b981; padding-right: 8px;">مفوتر إلى (Client Info)</h3>
+                            <div style="font-size: 14px; color: #334155; line-height: 1.8;">
+                                <p style="margin: 0 0 4px 0;"><span style="color: #64748b;">العميل:</span> <strong id="pdfClient" style="color: #0f172a; font-size: 16px;"></strong></p>
+                                <p style="margin: 0;"><span style="color: #64748b;">رقم الهاتف:</span> <strong id="pdfPhone" dir="ltr" style="font-family: monospace; color: #0f172a;"></strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Items Table -->
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 35px; text-align: right; font-size: 13px;">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); color: white;">
+                                <th style="padding: 14px 16px; font-weight: 700; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">البيان / الخدمة</th>
+                                <th style="padding: 14px 16px; font-weight: 700; text-align: center; width: 15%;">الكمية</th>
+                                <th style="padding: 14px 16px; font-weight: 700; text-align: center; width: 20%;">سعر الوحدة (ر.ع.)</th>
+                                <th style="padding: 14px 16px; font-weight: 700; text-align: center; width: 20%; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">المجموع (ر.ع.)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pdfItemsBody" style="color: #334155;">
+                            <!-- Inserted by JS -->
+                        </tbody>
+                    </table>
+
+                    <!-- Totals & Payment Info -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 20px;">
+                        <!-- Payment Instructions (Simulated Bank Details) -->
+                        <div style="width: 50%; font-size: 11px; color: #64748b; line-height: 1.6; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px dashed #e2e8f0;">
+                            <h4 style="margin: 0 0 6px 0; color: #475569; font-weight: 700;">معلومات الدفع والتسوية:</h4>
+                            <p style="margin: 0 0 3px 0;">يرجى تحويل المبلغ المستحق عبر التحويل البنكي أو الهاتفي.</p>
+                            <p style="margin: 0;">نظام الدفع الفوري: بنك مسقط (ولاية منح)</p>
+                        </div>
+                        
+                        <!-- Final Totals Card -->
+                        <div style="width: 40%;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                <tr>
+                                    <td style="padding: 12px; font-weight: 700; color: #064e3b; border: 1px solid #e2e8f0; background: #f8fafc; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">الإجمالي الكلي:</td>
+                                    <td style="padding: 12px; font-weight: 800; color: #059669; font-family: monospace; font-size: 22px; text-align: center; border: 1px solid #e2e8f0; background: #ecfdf5; border-top-left-radius: 8px; border-bottom-left-radius: 8px; box-shadow: inset 0 -2px 0 rgba(16, 185, 129, 0.1);"><span id="pdfTotal"></span> ر.ع.</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Divider Line -->
+                    <div style="border-top: 1px solid #f1f5f9; margin-top: 50px; padding-top: 20px; text-align: center; color: #94a3b8; font-size: 12px; line-height: 1.6;">
+                        <p style="margin: 0; font-weight: 600; color: #475569;">نشكركم لتعاملكم معنا ونتمنى لكم موسماً زراعياً مزدهراً 🌾</p>
+                        <p style="margin: 4px 0 0 0; font-size: 10px; color: #cbd5e1;">تم إصدار وتدقيق هذه الفاتورة إلكترونياً عبر منصة توسع</p>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Client Info & Details -->
-        <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 35px;">
-            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #f1f5f9;">
-                <h3 style="margin-top: 0; margin-bottom: 12px; color: #064e3b; font-size: 15px; font-weight: 700; border-right: 3px solid #10b981; padding-right: 8px;">مفوتر إلى (Client Info)</h3>
-                <div style="font-size: 14px; color: #334155; line-height: 1.8;">
-                    <p style="margin: 0 0 4px 0;"><span style="color: #64748b;">العميل:</span> <strong id="pdfClient" style="color: #0f172a; font-size: 16px;"></strong></p>
-                    <p style="margin: 0;"><span style="color: #64748b;">رقم الهاتف:</span> <strong id="pdfPhone" dir="ltr" style="font-family: monospace; color: #0f172a;"></strong></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Invoice Items Table -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 35px; text-align: right; font-size: 13px;">
-            <thead>
-                <tr style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); color: white;">
-                    <th style="padding: 14px 16px; font-weight: 700; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">البيان / الخدمة</th>
-                    <th style="padding: 14px 16px; font-weight: 700; text-align: center; width: 15%;">الكمية</th>
-                    <th style="padding: 14px 16px; font-weight: 700; text-align: center; width: 20%;">سعر الوحدة (ر.ع.)</th>
-                    <th style="padding: 14px 16px; font-weight: 700; text-align: center; width: 20%; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">المجموع (ر.ع.)</th>
-                </tr>
-            </thead>
-            <tbody id="pdfItemsBody" style="color: #334155;">
-                <!-- Inserted by JS -->
-            </tbody>
-        </table>
-
-        <!-- Totals & Payment Info -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 20px;">
-            <!-- Payment Instructions (Simulated Bank Details) -->
-            <div style="width: 50%; font-size: 11px; color: #64748b; line-height: 1.6; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px dashed #e2e8f0;">
-                <h4 style="margin: 0 0 6px 0; color: #475569; font-weight: 700;">معلومات الدفع والتسوية:</h4>
-                <p style="margin: 0 0 3px 0;">يرجى تحويل المبلغ المستحق عبر التحويل البنكي أو الهاتفي.</p>
-                <p style="margin: 0;">نظام الدفع الفوري: بنك مسقط (ولاية منح)</p>
-            </div>
-            
-            <!-- Final Totals Card -->
-            <div style="width: 40%;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                    <tr>
-                        <td style="padding: 12px; font-weight: 700; color: #064e3b; border: 1px solid #e2e8f0; background: #f8fafc; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">الإجمالي الكلي:</td>
-                        <td style="padding: 12px; font-weight: 800; color: #059669; font-family: monospace; font-size: 22px; text-align: center; border: 1px solid #e2e8f0; background: #ecfdf5; border-top-left-radius: 8px; border-bottom-left-radius: 8px; box-shadow: inset 0 -2px 0 rgba(16, 185, 129, 0.1);"><span id="pdfTotal"></span> ر.ع.</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-        <!-- Divider Line -->
-        <div style="border-top: 1px solid #f1f5f9; margin-top: 50px; padding-top: 20px; text-align: center; color: #94a3b8; font-size: 12px; line-height: 1.6;">
-            <p style="margin: 0; font-weight: 600; color: #475569;">نشكركم لتعاملكم معنا ونتمنى لكم موسماً زراعياً مزدهراً 🌾</p>
-            <p style="margin: 4px 0 0 0; font-size: 10px; color: #cbd5e1;">تم إصدار وتدقيق هذه الفاتورة إلكترونياً عبر منصة توسع</p>
         </div>
     </div>
 
@@ -1235,39 +1256,33 @@
 
             document.getElementById('pdfTotal').textContent = inv.amount.toLocaleString('ar-OM', {minimumFractionDigits: 2});
 
-            const element = document.getElementById('pdfTemplate');
-            
-            // Temporary reveal style for clean capture
-            element.style.position = 'fixed';
-            element.style.left = '0';
-            element.style.top = '0';
-            element.style.opacity = '1';
-            element.style.zIndex = '9999';
-
-            const opt = {
-                margin: [10, 10, 10, 10],
-                filename: `فاتورة_${inv.client}_${inv.id}.pdf`,
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 2, useCORS: true, windowWidth: 794, scrollY: 0, scrollX: 0 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            // Bind download button
+            document.getElementById('pdfDownloadBtn').onclick = () => {
+                const element = document.getElementById('pdfTemplate');
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: `فاتورة_${inv.client}_${inv.id}.pdf`,
+                    image: { type: 'jpeg', quality: 1 },
+                    html2canvas: { scale: 2, useCORS: true, windowWidth: 794, scrollY: 0, scrollX: 0 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                // Restore hidden style off-screen
-                element.style.position = 'fixed';
-                element.style.left = '-9999px';
-                element.style.top = '0';
-                element.style.opacity = '1';
-                element.style.zIndex = '-9999';
-            }).catch(err => {
-                console.error("PDF generation failed: ", err);
-                // Restore hidden style off-screen in case of failure
-                element.style.position = 'fixed';
-                element.style.left = '-9999px';
-                element.style.top = '0';
-                element.style.opacity = '1';
-                element.style.zIndex = '-9999';
-            });
+            // Show modal
+            const modal = document.getElementById('pdfModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 50);
+        }
+
+        function closePdfModal() {
+            const modal = document.getElementById('pdfModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
         }
 
         // --- Rental Logic ---
