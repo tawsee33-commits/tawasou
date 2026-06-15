@@ -9,8 +9,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- html2pdf for perfect Arabic PDF export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- html2canvas for capturing HTML as image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -367,9 +369,14 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 mt-2 rounded-xl transition shadow-md flex items-center justify-center gap-2">
-                                    <i class="fas fa-save"></i> حفظ وإصدار الفاتورة
-                                </button>
+                                <div class="flex gap-2 mt-2">
+                                    <button type="submit" id="invoiceSubmitBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                        <i class="fas fa-save"></i> <span>حفظ وإصدار الفاتورة</span>
+                                    </button>
+                                    <button type="button" id="invoiceCancelBtn" onclick="cancelEditInvoice()" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -780,9 +787,12 @@
             </div>
             <!-- Modal Body (The Invoice) -->
             <div class="p-8 overflow-x-auto flex justify-center bg-gray-100/50">
-                <div id="pdfTemplate" style="width: 800px; min-height: 1130px; padding: 40px; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                <div id="pdfTemplate" style="width: 800px; min-height: 1130px; padding: 0; font-family: 'Cairo', sans-serif; direction: rtl; background: white; color: #1f2937; box-sizing: border-box; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden;">
                     <!-- Top Gradient Accent Bar -->
-                    <div style="height: 6px; background: linear-gradient(90deg, #059669 0%, #10b981 100%); margin: -20mm -20mm 20px -20mm;"></div>
+                    <div style="height: 6px; background: linear-gradient(90deg, #059669 0%, #10b981 100%); width: 100%;"></div>
+                    
+                    <!-- Inner Content with Padding -->
+                    <div style="padding: 35px 40px 40px 40px;">
                     
                     <!-- Header -->
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 25px; margin-bottom: 30px;">
@@ -853,6 +863,7 @@
                         <p style="margin: 0; font-weight: 600; color: #475569;">نشكركم لتعاملكم معنا ونتمنى لكم موسماً زراعياً مزدهراً 🌾</p>
                         <p style="margin: 4px 0 0 0; font-size: 10px; color: #cbd5e1;">تم إصدار وتدقيق هذه الفاتورة إلكترونياً عبر منصة توسع</p>
                     </div>
+                    </div><!-- end inner content padding wrapper -->
                 </div>
             </div>
         </div>
@@ -869,6 +880,7 @@
         let projects = JSON.parse(localStorage.getItem('tawasou_projects')) || [];
         let selectedProjectId = null;
         let myChart = null;
+        let editingInvoiceId = null;
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -1132,21 +1144,45 @@
                 return;
             }
 
-            const inv = {
-                id: Date.now(),
-                client: clientName,
-                phone: phone,
-                items: items,
-                amount: totalAmount,
-                date: new Date().toLocaleDateString('ar-OM')
-            };
-            
-            if(!clients.find(c => c.name === inv.client)) {
-                clients.push({ id: Date.now(), name: inv.client, phone: inv.phone, notes: 'أُضيف تلقائياً من الفاتورة' });
-                localStorage.setItem('tawasou_clients', JSON.stringify(clients));
+            if (editingInvoiceId) {
+                // Update existing invoice
+                const index = invoices.findIndex(i => i.id === editingInvoiceId);
+                if (index !== -1) {
+                    invoices[index].client = clientName;
+                    invoices[index].phone = phone;
+                    invoices[index].items = items;
+                    invoices[index].amount = totalAmount;
+                    // Keep original date and ID
+                }
+                editingInvoiceId = null;
+                
+                // Reset UI
+                const btn = document.getElementById('invoiceSubmitBtn');
+                btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-blue-700', 'hover:bg-emerald-700');
+                btn.querySelector('span').textContent = 'حفظ وإصدار الفاتورة';
+                btn.querySelector('i').className = 'fas fa-save';
+                document.getElementById('invoiceCancelBtn').classList.add('hidden');
+                alert('تم تحديث الفاتورة بنجاح!');
+            } else {
+                // Create new invoice
+                const inv = {
+                    id: Date.now(),
+                    client: clientName,
+                    phone: phone,
+                    items: items,
+                    amount: totalAmount,
+                    date: new Date().toLocaleDateString('ar-OM')
+                };
+                
+                if(!clients.find(c => c.name === inv.client)) {
+                    clients.push({ id: Date.now(), name: inv.client, phone: inv.phone, notes: 'أُضيف تلقائياً من الفاتورة' });
+                    localStorage.setItem('tawasou_clients', JSON.stringify(clients));
+                }
+                invoices.push(inv);
+                alert('تم حفظ الفاتورة بنجاح!');
             }
 
-            invoices.push(inv);
             localStorage.setItem('tawasou_invoices', JSON.stringify(invoices));
             
             document.getElementById('invoiceForm').reset();
@@ -1154,7 +1190,63 @@
             addInvoiceItemRow(); // reset table
             
             refreshAllViews();
-            alert('تم حفظ الفاتورة بنجاح!');
+        }
+
+        function editInvoice(id) {
+            const inv = invoices.find(i => i.id === id);
+            if (!inv) return;
+            
+            editingInvoiceId = id;
+            document.getElementById('invClient').value = inv.client;
+            document.getElementById('invPhone').value = inv.phone;
+            
+            const tbody = document.getElementById('invoiceItemsBody');
+            tbody.innerHTML = ''; // clear existing rows
+            
+            const items = inv.items || [{ desc: inv.desc, qty: 1, price: inv.amount, total: inv.amount }];
+            
+            items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-t border-gray-100 dark:border-gray-700 item-row transition';
+                tr.dataset.total = item.total;
+                tr.innerHTML = `
+                    <td class="p-2"><input type="text" required value="${item.desc}" class="item-desc w-full p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white" placeholder="المادة / الخدمة"></td>
+                    <td class="p-2"><input type="number" required min="1" value="${item.qty}" oninput="calcInvoiceRow(this)" class="item-qty w-full p-2.5 text-center rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white font-mono min-w-[70px]"></td>
+                    <td class="p-2"><input type="number" required min="0" step="0.01" value="${item.price}" oninput="calcInvoiceRow(this)" class="item-price w-full p-2.5 text-center rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white font-mono min-w-[90px]"></td>
+                    <td class="p-2 text-center font-mono font-bold text-gray-700 dark:text-gray-300 item-total-text">${item.total.toLocaleString('ar-OM', {minimumFractionDigits: 2})}</td>
+                    <td class="p-2 text-center"><button type="button" onclick="removeInvoiceItemRow(this)" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-times"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateInvoiceTotal();
+            
+            // Change button UI
+            const btn = document.getElementById('invoiceSubmitBtn');
+            btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            btn.classList.replace('hover:bg-emerald-700', 'hover:bg-blue-700');
+            btn.querySelector('span').textContent = 'تحديث الفاتورة';
+            btn.querySelector('i').className = 'fas fa-edit';
+            
+            document.getElementById('invoiceCancelBtn').classList.remove('hidden');
+            
+            // Scroll to form
+            document.getElementById('invoicing').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEditInvoice() {
+            editingInvoiceId = null;
+            document.getElementById('invoiceForm').reset();
+            document.getElementById('invoiceItemsBody').innerHTML = '';
+            addInvoiceItemRow(); // reset table
+            
+            // Reset button UI
+            const btn = document.getElementById('invoiceSubmitBtn');
+            btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            btn.classList.replace('hover:bg-blue-700', 'hover:bg-emerald-700');
+            btn.querySelector('span').textContent = 'حفظ وإصدار الفاتورة';
+            btn.querySelector('i').className = 'fas fa-save';
+            
+            document.getElementById('invoiceCancelBtn').classList.add('hidden');
         }
 
         function renderInvoices() {
@@ -1182,6 +1274,7 @@
                     <td class="p-3 flex justify-center gap-2">
                         <button onclick="shareInvoiceWhatsApp(${inv.id})" class="text-emerald-500 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 p-2 rounded-lg transition" title="مشاركة بالواتساب"><i class="fab fa-whatsapp"></i></button>
                         <button onclick="generatePDF(${inv.id})" class="text-blue-500 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg transition" title="طباعة PDF"><i class="fas fa-file-pdf"></i></button>
+                        <button onclick="editInvoice(${inv.id})" class="text-amber-500 hover:text-amber-700 bg-amber-50 dark:bg-amber-900/30 p-2 rounded-lg transition" title="تعديل"><i class="fas fa-edit"></i></button>
                         <button onclick="deleteInvoice(${inv.id})" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/30 p-2 rounded-lg transition" title="حذف"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
@@ -1228,6 +1321,7 @@
             const inv = invoices.find(i => i.id === id);
             if (!inv) return;
 
+            // Populate modal preview (for visual display)
             document.getElementById('pdfClient').textContent = inv.client;
             document.getElementById('pdfPhone').textContent = inv.phone;
             document.getElementById('pdfId').textContent = inv.id.toString().slice(-6);
@@ -1236,7 +1330,6 @@
             const tbody = document.getElementById('pdfItemsBody');
             tbody.innerHTML = '';
             
-            // Map old invoice structure to new for PDF backward compatibility
             const items = inv.items || [{ desc: inv.desc || 'خدمات وأعمال زراعية', qty: 1, price: inv.amount, total: inv.amount }];
             
             items.forEach((item, index) => {
@@ -1256,17 +1349,9 @@
 
             document.getElementById('pdfTotal').textContent = inv.amount.toLocaleString('ar-OM', {minimumFractionDigits: 2});
 
-            // Bind download button
+            // Bind download button to direct jsPDF generation
             document.getElementById('pdfDownloadBtn').onclick = () => {
-                const element = document.getElementById('pdfTemplate');
-                const opt = {
-                    margin: [10, 10, 10, 10],
-                    filename: `فاتورة_${inv.client}_${inv.id}.pdf`,
-                    image: { type: 'jpeg', quality: 1 },
-                    html2canvas: { scale: 2, useCORS: true, windowWidth: 800, scrollY: 0, scrollX: 0 },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-                html2pdf().set(opt).from(element).save();
+                downloadInvoicePDF(inv);
             };
 
             // Show modal
@@ -1283,6 +1368,116 @@
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
+        }
+
+        // ========== html2canvas + jsPDF Invoice Generator ==========
+        function downloadInvoicePDF(inv) {
+            const element = document.getElementById('pdfTemplate');
+            const btn = document.getElementById('pdfDownloadBtn');
+            
+            // Show loading state
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
+            btn.disabled = true;
+            
+            // Create a wrapper to force LTR context so html2canvas doesn't calculate negative X offsets on mobile
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'absolute';
+            wrapper.style.top = '0px';
+            wrapper.style.left = '0px';
+            wrapper.style.width = '800px';
+            wrapper.style.zIndex = '-9999';
+            wrapper.style.opacity = '0'; // Invisible but rendered
+            wrapper.style.pointerEvents = 'none';
+            wrapper.setAttribute('dir', 'ltr'); // FIX for RTL canvas cropping
+
+            // Clone the template to avoid viewport/overflow restrictions
+            const clone = element.cloneNode(true);
+            clone.style.width = '800px';
+            clone.style.maxWidth = 'none';
+            clone.style.margin = '0';
+            clone.style.transform = 'none';
+            clone.setAttribute('dir', 'rtl'); // Inner content is RTL
+            
+            wrapper.appendChild(clone);
+            document.body.appendChild(wrapper);
+            
+            // Temporarily scroll to top left just to be safe with html2canvas viewport calc
+            const origX = window.scrollX;
+            const origY = window.scrollY;
+            window.scrollTo(0, 0);
+
+            // Use html2canvas to capture the cloned template
+            html2canvas(clone, {
+                scale: 2,           // High resolution
+                useCORS: true,      // Allow cross-origin images
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                width: 800,         // Fixed width
+                windowWidth: 800,   // Consistent viewport
+                logging: false,
+                x: 0,
+                y: 0,
+                scrollX: 0,
+                scrollY: 0
+            }).then(canvas => {
+                window.scrollTo(origX, origY);
+                if (wrapper.parentNode) {
+                    document.body.removeChild(wrapper); // Cleanup
+                }
+                const { jsPDF } = window.jspdf;
+                
+                // A4 dimensions in mm
+                const pdfW = 210;
+                const pdfH = 297;
+                const margin = 8; // mm
+                
+                const contentW = pdfW - (margin * 2);
+                
+                // Calculate the height based on canvas aspect ratio
+                const imgW = canvas.width;
+                const imgH = canvas.height;
+                const ratio = imgH / imgW;
+                const contentH = contentW * ratio;
+                
+                // Create PDF (use portrait, if content fits one page)
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                // Convert canvas to image data
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                
+                // Add image to PDF, centered with margins
+                if (contentH <= pdfH - (margin * 2)) {
+                    // Fits on one page
+                    doc.addImage(imgData, 'PNG', margin, margin, contentW, contentH);
+                } else {
+                    // If content is taller than one page, scale to fit
+                    const scaledH = pdfH - (margin * 2);
+                    const scaledW = scaledH / ratio;
+                    const offsetX = (pdfW - scaledW) / 2;
+                    doc.addImage(imgData, 'PNG', offsetX, margin, scaledW, scaledH);
+                }
+                
+                // Save
+                doc.save(`invoice_${inv.client}_${inv.id}.pdf`);
+                
+                // Reset button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }).catch(err => {
+                window.scrollTo(origX, origY);
+                if (wrapper.parentNode) {
+                    document.body.removeChild(wrapper);
+                }
+                console.error('PDF generation error:', err);
+                alert('حدث خطأ أثناء توليد الفاتورة. يرجى المحاولة مرة أخرى.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
         }
 
         // --- Rental Logic ---
